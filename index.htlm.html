@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tetris Tri Thức Hồ Chí Minh</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1224;--card:#141d36;--ln:#26325a;--tx:#e8edf7;--red:#da251d;--gold:#ffcd00;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,"Segoe UI",Roboto,Arial,sans-serif;touch-action:manipulation}
+#app{max-width:1000px;margin:0 auto;padding:10px;display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+h1{flex:1 1 100%;margin:0;padding:10px 14px;text-align:center;font-size:clamp(18px,4vw,26px);background:linear-gradient(90deg,var(--red),#b01a14);border-radius:10px;border-bottom:3px solid var(--gold)}
+h1 span{color:var(--gold)}
+.left{flex:0 0 auto;width:min(100%,310px)}
+canvas{width:100%;display:block;border:3px solid var(--red);border-radius:8px;background:#0b1220;aspect-ratio:1/2}
+.pad{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+.pad button{padding:12px 0;font-size:20px;background:var(--card);color:var(--tx);border:1px solid var(--ln);border-radius:10px;user-select:none;touch-action:none}
+.pad button:active{background:var(--ln)}
+.right{flex:1 1 340px;min-width:290px;display:flex;flex-direction:column;gap:10px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.badge{background:var(--card);border:1px solid var(--ln);border-radius:999px;padding:4px 12px;font-weight:700}
+.badge.g{color:var(--gold);border-color:var(--gold)}
+.tm{display:flex;align-items:center;gap:12px}
+#tm{font-size:46px;font-weight:800;min-width:66px;text-align:center;color:var(--gold);font-variant-numeric:tabular-nums}
+.bw{flex:1;height:16px;background:var(--card);border-radius:8px;overflow:hidden;border:1px solid var(--ln)}
+#bar{height:100%;width:100%;background:#22c55e;transition:background .2s}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:14px}
+#topic{font-size:13px;color:#8fa3d6;text-transform:uppercase;letter-spacing:.04em}
+#q{font-size:18px;font-weight:600;margin-top:4px}
+#ans{display:grid;gap:8px}
+#ans button{display:flex;gap:10px;text-align:left;padding:10px 12px;font:inherit;color:var(--tx);background:var(--card);border:2px solid var(--ln);border-radius:10px;cursor:pointer}
+#ans button b{color:var(--gold)}
+#ans button:hover:not(:disabled){border-color:var(--gold)}
+#ans button:disabled{cursor:default}
+#ans .ok{background:#14532d;border-color:#22c55e}
+#ans .bad{background:#7f1d1d;border-color:#ef4444}
+.pw{display:flex;gap:6px;flex-wrap:wrap}.pw button{padding:8px 10px;font:inherit;font-weight:700;background:var(--card);color:var(--tx);border:1px solid var(--gold);border-radius:10px;cursor:pointer}.pw button:disabled{background:#2a2f3d;color:#7b8394;border-color:#3a4050;filter:grayscale(1);opacity:.65;cursor:default}.pw i{font-style:normal;color:var(--gold)}.pad button:not(:disabled){border-color:var(--gold)}.pad button:disabled,#ans button:disabled:not(.ok):not(.bad){background:#2a2f3d;color:#7b8394;border-color:#3a4050;filter:grayscale(1);opacity:.65}#ov button{margin:14px 4px 0}
+#st{font-weight:700;padding:8px 12px;border-radius:8px;background:#1b2750}
+#ex{min-height:48px;font-size:14px;color:#c9d4f0}
+#ov{position:fixed;inset:0;background:rgba(5,9,20,.88);display:flex;align-items:center;justify-content:center;padding:20px;z-index:9}
+#ov[hidden]{display:none}
+#ov div{max-width:420px;text-align:center;background:var(--card);border:3px solid var(--red);border-radius:16px;padding:26px}
+#ov h2{margin:0 0 8px;color:var(--gold);font-size:26px}
+#ov button{margin-top:14px;padding:12px 28px;font:700 18px inherit;background:var(--red);color:#fff;border:2px solid var(--gold);border-radius:10px;cursor:pointer}
+</style></head><body>
+<div id="app">
+<h1><span>★</span> Tetris Tri Thức Hồ Chí Minh <span>★</span></h1>
+<div class="left"><canvas id="cv" width="300" height="600"></canvas>
+<div class="pad"><button data-a="L" aria-label="Trái">⬅️</button><button data-a="R" aria-label="Phải">➡️</button><button data-a="T" aria-label="Xoay">🔄</button><button data-a="D" aria-label="Thả nhanh">⬇️</button></div></div>
+<div class="right">
+<div class="row"><span class="badge g" id="no">Câu 1 / 20</span><span class="badge" id="sc">Điểm: 0</span><span class="badge" id="okc">Đúng: 0</span></div>
+<div class="tm"><div id="tm">15</div><div class="bw"><div id="bar"></div></div></div>
+<div class="pw"><button data-w="f">✂️ 50:50 <i id="nf">2</i></button><button data-w="t">⏱️ +10 giây <i id="nt">1</i></button><button data-w="c">🧹 Dọn gạch <i id="nc">0</i></button></div>
+<div class="card"><div id="topic"></div><div id="q"></div></div>
+<div id="ans"></div>
+<div id="st"></div>
+<div id="ex"></div>
+</div></div>
+<div id="ov"><div><h2>★ Tetris Tri Thức ★</h2><p id="ovt">Trả lời đúng trong 15 giây để mở khóa khối gạch. Sai hoặc hết giờ, gạch tự rơi! Hoàn thành 20 khối mà không chạm vạch đỏ để chiến thắng.<br>✂️ Quyền trợ giúp: 50:50 (2 lần), +10 giây (1 lần). Trả lời đúng liên tiếp 3 câu được thưởng 🧹 Dọn gạch (xóa 2 hàng dưới cùng). Chuỗi đúng càng dài, điểm thưởng càng cao! (phím Q/W/E)<br><small>Phím: ← → di chuyển, ↑ xoay, ↓ rơi chậm, Space thả nhanh, 1-4 chọn đáp án.</small></p><button id="go">Bắt đầu</button></div></div>
+<script>
+const T=['Khái niệm & phương pháp nghiên cứu','Nguồn gốc & quá trình hình thành','Độc lập dân tộc & chủ nghĩa xã hội','Đảng & Nhà nước của dân, do dân, vì dân','Đại đoàn kết dân tộc & đoàn kết quốc tế','Văn hóa, đạo đức, con người mới'],TM='00011122233344455555';
+const Q=[
+["Theo Đảng Cộng sản Việt Nam, tư tưởng Hồ Chí Minh là:",["Hệ thống quan điểm toàn diện, sâu sắc về những vấn đề cơ bản của cách mạng Việt Nam","Tập hợp các bài nói, bài viết của Hồ Chí Minh","Học thuyết triết học thuần túy phương Đông","Sự kế thừa duy nhất của Nho giáo"],0,"Đó là hệ thống quan điểm gắn với việc vận dụng, phát triển sáng tạo chủ nghĩa Mác - Lênin vào Việt Nam."],
+["Đối tượng nghiên cứu của môn Tư tưởng Hồ Chí Minh là:",["Lịch sử các cuộc chiến tranh ở Việt Nam","Hệ thống quan điểm, lý luận của Hồ Chí Minh về cách mạng Việt Nam","Tiểu sử và gia đình Hồ Chí Minh","Kinh tế học của C. Mác"],1,"Môn học nghiên cứu hệ thống quan điểm, lý luận của Người về cách mạng Việt Nam."],
+["Cơ sở phương pháp luận của việc nghiên cứu tư tưởng Hồ Chí Minh là:",["Chủ nghĩa duy tâm chủ quan","Chủ nghĩa kinh nghiệm","Chủ nghĩa duy vật biện chứng và duy vật lịch sử","Chủ nghĩa thực dụng"],2,"Nghiên cứu phải dựa trên thế giới quan, phương pháp luận Mác - Lênin."],
+["Nguồn gốc lý luận quyết định bản chất tư tưởng Hồ Chí Minh là:",["Truyền thống văn hóa dân tộc","Chủ nghĩa Mác - Lênin","Tinh hoa văn hóa phương Tây","Nho giáo"],1,"Chủ nghĩa Mác - Lênin là nguồn gốc lý luận trực tiếp, quyết định bản chất tư tưởng của Người."],
+["Năm 1911, Nguyễn Tất Thành ra đi tìm đường cứu nước từ:",["Cảng Hải Phòng","Bến cảng Nhà Rồng (Sài Gòn)","Cảng Đà Nẵng","Cảng Vinh"],1,"Ngày 5/6/1911, Người rời bến Nhà Rồng trên tàu Amiral Latouche-Tréville."],
+["Sự kiện nào đánh dấu Nguyễn Ái Quốc tìm thấy con đường cứu nước?",["Thành lập Hội Việt Nam Cách mạng Thanh niên","Đọc Luận cương của Lênin về vấn đề dân tộc và thuộc địa (7/1920)","Về nước năm 1941","Viết Bản án chế độ thực dân Pháp"],1,"Đọc Luận cương của Lênin (7/1920), Người khẳng định con đường cách mạng vô sản."],
+["Theo Hồ Chí Minh, con đường duy nhất để cứu nước, giải phóng dân tộc là:",["Cải cách theo Nho giáo","Dựa vào đế quốc này đánh đế quốc khác","Cách mạng vô sản","Cải lương, xin ân huệ"],2,"Người kết luận: không có con đường nào khác ngoài con đường cách mạng vô sản."],
+["Theo Hồ Chí Minh, độc lập dân tộc phải gắn liền với:",["Chủ nghĩa tư bản","Chủ nghĩa xã hội","Chế độ phong kiến","Chủ nghĩa dân tộc hẹp hòi"],1,"Độc lập dân tộc gắn liền với chủ nghĩa xã hội mới thật sự bền vững."],
+["Mục tiêu chung của chủ nghĩa xã hội theo Hồ Chí Minh là:",["Tích lũy tài sản cho một số người","Không ngừng nâng cao đời sống vật chất và tinh thần của nhân dân","Xóa bỏ hoàn toàn mọi sự khác biệt","Chỉ phát triển công nghiệp nặng"],1,"Mục tiêu là làm cho dân giàu nước mạnh, nâng cao đời sống nhân dân, trước hết là nhân dân lao động."],
+["Ai chủ trì Hội nghị hợp nhất các tổ chức cộng sản thành Đảng Cộng sản Việt Nam (đầu năm 1930)?",["Trần Phú","Nguyễn Ái Quốc","Lê Hồng Phong","Hoàng Quốc Việt"],1,"Nguyễn Ái Quốc chủ trì hội nghị ở Hương Cảng, thành lập Đảng ngày 3/2/1930."],
+["Theo Hồ Chí Minh, Đảng Cộng sản Việt Nam là Đảng của:",["Chỉ giai cấp công nhân","Chỉ giai cấp nông dân","Giai cấp công nhân, nhân dân lao động và dân tộc Việt Nam","Giới trí thức"],2,"Đảng là đội tiên phong của giai cấp công nhân, đồng thời của nhân dân lao động và dân tộc."],
+["Theo Hồ Chí Minh, trong Nhà nước dân chủ, chủ thể có địa vị cao nhất là:",["Nhân dân","Chính phủ","Quốc hội","Đảng viên"],0,"Người nói: nước ta là nước dân chủ, dân là chủ và dân làm chủ."],
+["Lực lượng nòng cốt của khối đại đoàn kết toàn dân tộc là:",["Giai cấp địa chủ","Liên minh công - nông và trí thức","Tư sản mại bản","Các lực lượng nước ngoài"],1,"Nền tảng của khối đại đoàn kết là liên minh công nhân, nông dân và lao động trí thức."],
+["Theo Hồ Chí Minh, đại đoàn kết toàn dân tộc là:",["Sách lược nhất thời","Chiến lược cơ bản, nhất quán, lâu dài, quyết định thành bại của cách mạng","Chỉ cần trong thời chiến","Chỉ là khẩu hiệu"],1,"Người nhấn mạnh: đoàn kết là sức mạnh, là then chốt của thành công."],
+["Đoàn kết quốc tế theo Hồ Chí Minh nhằm:",["Biệt lập với thế giới","Phụ thuộc vào nước lớn","Kết hợp sức mạnh dân tộc với sức mạnh thời đại","Gây thù oán với các nước"],2,"Việt Nam muốn làm bạn với tất cả các nước dân chủ, kết hợp sức mạnh dân tộc và thời đại."],
+["Theo Hồ Chí Minh, văn hóa có vai trò:",["Chỉ để giải trí","Soi đường cho quốc dân đi","Không liên quan đến chính trị","Chỉ phục vụ kinh tế"],1,"Người nói: văn hóa soi đường cho quốc dân đi, là mặt trận."],
+["Phẩm chất đạo đức cao nhất của người cách mạng theo Hồ Chí Minh là:",["Cần cù","Tiết kiệm","Trung với nước, hiếu với dân","Khiêm tốn"],2,"Đây là phẩm chất bao trùm, thể hiện bản chất đạo đức cách mạng."],
+["Bốn đức theo Hồ Chí Minh: cần, kiệm, liêm, ...",["Chính","Mẫn","Hòa","Tín"],0,"Cần, kiệm, liêm, chính là bốn đức của con người; thiếu một đức thì không thành người."],
+["“Vì lợi ích mười năm thì phải trồng cây, vì lợi ích trăm năm thì phải trồng người” nói về:",["Bảo vệ môi trường","Phát triển nông nghiệp","Vai trò của giáo dục, đào tạo con người","Chiến lược quân sự"],2,"Người đặt con người, giáo dục ở vị trí then chốt của sự nghiệp lâu dài."],
+["Người cán bộ cách mạng “vừa hồng vừa chuyên” nghĩa là:",["Vừa giàu vừa giỏi","Vừa có đức vừa có tài","Vừa trẻ vừa khỏe","Vừa cũ vừa mới"],1,"“Hồng” là đạo đức, phẩm chất chính trị; “chuyên” là tài năng, chuyên môn."]];
+const W=10,H=20,C=30,DZ=10,X=cv.getContext('2d');
+const SH={I:[[1,1,1,1]],O:[[1,1],[1,1]],T:[[0,1,0],[1,1,1]],S:[[0,1,1],[1,1,0]],Z:[[1,1,0],[0,1,1]],J:[[1,0,0],[1,1,1]],L:[[0,0,1],[1,1,1]]};
+const CO={I:'#22d3ee',O:'#facc15',T:'#c084fc',S:'#4ade80',Z:'#f87171',J:'#60a5fa',L:'#fb923c'};
+let g=null,AC,last=0;const $=id=>document.getElementById(id);
+function snd(f,d,t='sine',v=.12,w=0){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),a=AC.createGain(),s=AC.currentTime+w;o.type=t;o.frequency.value=f;a.gain.setValueAtTime(v,s);a.gain.exponentialRampToValueAtTime(.001,s+d);o.connect(a);a.connect(AC.destination);o.start(s);o.stop(s+d)}catch(e){}}
+const hit=(m,x,y)=>m.some((r,j)=>r.some((v,i)=>v&&(x+i<0||x+i>=W||y+j>=H||(y+j>=0&&g.b[y+j][x+i]))));
+function start(){g={b:Array.from({length:H},()=>Array(W).fill(0)),i:0,s:0,ok:0,st:0,L:{f:2,t:1,c:0},ph:'x',t:15};$('ov').hidden=true;round()}
+function round(){const q=Q[g.i];g.t=15;g.lt=-1;g.acc=0;g.ph='answer';
+const ks=Object.keys(SH);g.k=ks[Math.random()*ks.length|0];g.m=SH[g.k].map(r=>r.slice());g.x=(W-g.m[0].length)>>1;g.y=0;
+if(hit(g.m,g.x,g.y))return end(false);
+$('topic').textContent=T[TM[g.i]];$('q').textContent=q[0];$('ex').textContent='';
+$('ans').innerHTML=q[1].map((a,i)=>`<button data-i="${i}"><b>${'ABCD'[i]}.</b><span>${a}</span></button>`).join('')}
+function resolve(k){if(!g||g.ph!='answer')return;const q=Q[g.i],ok=k==q[2];
+[...$('ans').children].forEach((b,i)=>{b.disabled=true;if(i==q[2])b.classList.add('ok');else if(i==k)b.classList.add('bad')});
+$('ex').textContent=(ok?'✅ Chính xác! ':k<0?'⏰ Hết giờ! ':'❌ Chưa đúng! ')+'Đáp án: '+'ABCD'[q[2]]+'. '+q[3];
+g.acc=0;if(ok){g.ok++;g.st++;g.s+=100+Math.ceil(g.t)*10+g.st*20;if(g.st%3==0){g.L.c++;setTimeout(()=>snd(1568,.3,'triangle',.12),400)}g.ph='control';snd(880,.15,'sine',.15);snd(1320,.25,'sine',.15,.12)}else{g.st=0;g.ph='auto';snd(150,.4,'sawtooth',.12)}}
+function step(){if(!hit(g.m,g.x,g.y+1))g.y++;else if(g.ph!='answer')lock()}
+function lock(){g.m.forEach((r,j)=>r.forEach((v,i)=>{if(v)g.b[g.y+j][g.x+i]=CO[g.k]}));let n=0;
+g.b=g.b.filter(r=>r.some(v=>!v)||(n++,false));while(g.b.length<H)g.b.unshift(Array(W).fill(0));
+if(n){g.s+=n*150;[523,659,784,1047].forEach((f,i)=>snd(f,.15,'triangle',.12,i*.07))}else snd(200,.12,'triangle',.2);
+g.m=null;if(g.b.slice(0,DZ).some(r=>r.some(v=>v)))return end(false);
+g.ph='settle';const me=g;setTimeout(()=>{if(g!==me||g.ph!='settle')return;g.i++;g.i>=20?end(true):round()},1500)}
+function act(a){if(!g||g.ph!='control')return;const m=g.m;
+if(a=='L'&&!hit(m,g.x-1,g.y))g.x--;
+else if(a=='R'&&!hit(m,g.x+1,g.y))g.x++;
+else if(a=='S')step();
+else if(a=='T'){const r=m[0].map((_,c)=>m.map(w=>w[c]).reverse());for(const d of[0,-1,1,-2,2])if(!hit(r,g.x+d,g.y)){g.m=r;g.x+=d;snd(500,.05,'square',.05);break}}
+else if(a=='D'){while(!hit(m,g.x,g.y+1))g.y++;lock()}}
+function end(win){g.ph='end';const o=g.ok;$('ov').hidden=false;
+$('ov').querySelector('h2').textContent=win?'🎉 CHIẾN THẮNG! 🎉':'💥 GAME OVER';
+$('ovt').innerHTML=(win?'Chúc mừng! Bạn đã xây xong 20 khối gạch tri thức!':'Gạch đã chồng vượt vạch đỏ khi mới đến câu '+(g.i+1)+'.')+`<br><br>Điểm: <b>${g.s}</b> · Đúng: <b>${o}/20</b><br>`+(win?(o>=18?'Xếp loại: Xuất sắc ★★★':o>=14?'Xếp loại: Giỏi ★★':o>=10?'Xếp loại: Khá ★':'Cố gắng ôn thêm nhé!'):'Hãy ôn lại và thử lần nữa!');
+$('go').textContent='Chơi lại';snd(win?784:120,.5,win?'triangle':'sawtooth',.15)}
+function usePw(w){if(!g)return;const L=g.L;
+if(w=='f'&&g.ph=='answer'&&L.f>0){L.f--;const q=Q[g.i][2];[...$('ans').children].filter((_,i)=>i!=q).sort(()=>Math.random()-.5).slice(0,2).forEach(b=>b.disabled=true);snd(700,.15,'triangle',.12)}
+else if(w=='t'&&g.ph=='answer'&&L.t>0){L.t--;g.t+=10;snd(900,.2,'triangle',.12)}
+else if(w=='c'&&(g.ph=='answer'||g.ph=='control')&&L.c>0){L.c--;g.b.splice(H-2,2);g.b.unshift(Array(W).fill(0),Array(W).fill(0));[392,523,659,784].forEach((f,i)=>snd(f,.15,'triangle',.12,i*.06))}}
+function ui(){const t=g.t,c=t>10?'#22c55e':t>5?'#eab308':'#ef4444';
+$('tm').textContent=Math.ceil(t);$('tm').style.color=c;$('bar').style.width=Math.min(100,t/15*100)+'%';$('bar').style.background=c;
+$('no').textContent=`Câu ${Math.min(g.i+1,20)} / 20`;$('sc').textContent='Điểm: '+g.s;$('okc').textContent='Đúng: '+g.ok+(g.st>=2?' · 🔥'+g.st:'');
+$('st').textContent={answer:'🔒 Gạch đang bị KHÓA — hãy trả lời đúng để điều khiển!',control:'🔓 ĐÃ MỞ KHÓA — dùng ← → ↑ ↓ / Space để xếp gạch!',auto:'⏬ Không được điều khiển — gạch tự rơi xuống!',settle:'⏳ Chuẩn bị câu tiếp theo...',end:''}[g.ph]||'';
+document.querySelectorAll('.pad button').forEach(b=>b.disabled=g.ph!='control');
+const L=g.L,a=g.ph=='answer',q=s=>document.querySelector('[data-w='+s+']');$('nf').textContent=L.f;$('nt').textContent=L.t;$('nc').textContent=L.c;
+q('f').disabled=!(a&&L.f>0);q('t').disabled=!(a&&L.t>0);q('c').disabled=!((a||g.ph=='control')&&L.c>0)}
+function cell(x,y,c,a){X.globalAlpha=a;X.fillStyle=c;X.shadowColor=c;X.shadowBlur=a<1?0:8;X.fillRect(x*C+1,y*C+1,C-2,C-2);X.shadowBlur=0;X.globalAlpha=1}
+function draw(){X.fillStyle='#0b1220';X.fillRect(0,0,300,600);X.strokeStyle='rgba(120,150,220,.1)';X.lineWidth=1;
+for(let i=1;i<W;i++){X.beginPath();X.moveTo(i*C,0);X.lineTo(i*C,600);X.stroke()}
+for(let j=1;j<H;j++){X.beginPath();X.moveTo(0,j*C);X.lineTo(300,j*C);X.stroke()}
+X.fillStyle='rgba(255,59,48,.08)';X.fillRect(0,0,300,DZ*C);
+if(g){g.b.forEach((r,y)=>r.forEach((v,x)=>v&&cell(x,y,v,1)));
+if(g.m){if(g.ph=='control'){let gy=g.y;while(!hit(g.m,g.x,gy+1))gy++;g.m.forEach((r,j)=>r.forEach((v,i)=>v&&cell(g.x+i,gy+j,CO[g.k],.25)))}
+g.m.forEach((r,j)=>r.forEach((v,i)=>v&&cell(g.x+i,g.y+j,CO[g.k],1)))}}
+X.setLineDash([8,6]);X.strokeStyle='#ff3b30';X.lineWidth=2;X.beginPath();X.moveTo(0,DZ*C);X.lineTo(300,DZ*C);X.stroke();X.setLineDash([])}
+function loop(ts){const dt=Math.min(ts-last,100);last=ts;
+if(g&&['answer','control','auto'].includes(g.ph)){
+if(g.ph=='answer'){g.t-=dt/1000;const c=Math.ceil(g.t);if(c!=g.lt){g.lt=c;if(c<=3&&c>0)snd(1000,.08,'square',.08)}if(g.t<=0){g.t=0;resolve(-1)}}
+g.acc+=dt;let iv={answer:1400,control:650,auto:22}[g.ph];
+while(g.acc>=iv&&['answer','control','auto'].includes(g.ph)){g.acc-=iv;step();iv={answer:1400,control:650,auto:22}[g.ph]||1e9}}
+if(g)ui();draw();requestAnimationFrame(loop)}
+$('go').onclick=start;document.querySelectorAll('.pad button').forEach(b=>b.disabled=true);document.querySelectorAll('[data-w]').forEach(b=>{b.disabled=true;b.onclick=()=>usePw(b.dataset.w)});
+$('ans').onclick=e=>{const b=e.target.closest('button');if(b)resolve(+b.dataset.i)};
+document.querySelectorAll('[data-a]').forEach(b=>b.onpointerdown=e=>{e.preventDefault();act(b.dataset.a)});
+addEventListener('keydown',e=>{const m={ArrowLeft:'L',ArrowRight:'R',ArrowUp:'T',ArrowDown:'S',' ':'D'}[e.key];
+if(m){e.preventDefault();act(m)}else if(g&&g.ph=='answer'&&/^[1-4]$/.test(e.key))resolve(e.key-1);else if(g&&e.key.length==1&&'qwe'.includes(e.key.toLowerCase()))usePw('ftc'['qwe'.indexOf(e.key.toLowerCase())])},{passive:false});
+requestAnimationFrame(loop);
+</script></body></html>
